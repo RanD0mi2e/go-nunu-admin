@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"context"
-	"errors"
 	v1 "admin-webrtc-go/api/v1"
 	"admin-webrtc-go/internal/model"
+	"context"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -13,6 +13,7 @@ type UserRepository interface {
 	Update(ctx context.Context, user *model.User) error
 	GetByID(ctx context.Context, id string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
+	GetUserWithRolesAndPermission(ctx context.Context, userId string) (*model.User, error)
 }
 
 func NewUserRepository(r *Repository) UserRepository {
@@ -55,6 +56,17 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*model.U
 	if err := r.DB(ctx).Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *userRepository) GetUserWithRolesAndPermission(ctx context.Context, userId string) (*model.User, error) {
+	var user model.User
+	if err := r.DB(ctx).Preload("Roles").Preload("Roles.Permissions").Where("user_id = ?", userId).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, v1.ErrEmptyRecord
 		}
 		return nil, err
 	}

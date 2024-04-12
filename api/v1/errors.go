@@ -8,6 +8,9 @@ var (
 	ErrNotFound            = newError(404, "Not Found")
 	ErrInternalServerError = newError(500, "Internal Server Error")
 
+	// sql errors
+	ErrEmptyRecord = newError(404, "Database Empty Record")
+
 	// more biz errors
 	ErrEmailAlreadyUse = newError(1001, "The email is already in use.")
 )

@@ -5,6 +5,7 @@ import (
 	"admin-webrtc-go/internal/model"
 	"admin-webrtc-go/internal/repository"
 	"context"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -15,6 +16,7 @@ type UserService interface {
 	Login(ctx context.Context, req *v1.LoginRequest) (string, error)
 	GetProfile(ctx context.Context, userId string) (*v1.GetProfileResponseData, error)
 	UpdateProfile(ctx context.Context, userId string, req *v1.UpdateProfileRequest) error
+	CheckAPIAuthPermission(ctx context.Context, userId string, api string) (bool, error)
 }
 
 func NewUserService(service *Service, userRepo repository.UserRepository) UserService {
@@ -109,4 +111,48 @@ func (s *userService) UpdateProfile(ctx context.Context, userId string, req *v1.
 	}
 
 	return nil
+}
+
+func (s *userService) CheckAPIAuthPermission(ctx context.Context, userId string, api string) (bool, error) {
+	user, err := s.userRepo.GetUserWithRolesAndPermission(ctx, userId)
+	// 数据库查不到用户的权限，返回false
+	if err != nil {
+		return false, err
+	}
+
+	// 并发去查询当前用户所有权限
+	var wg sync.WaitGroup
+	permissionChan := make(chan model.Permission)
+	for _, role := range user.Roles {
+		wg.Add(1)
+		go func(role model.Role) {
+			for _, permission := range role.Permissions {
+				// api权限控制
+				if permission.PermissionType == "API" {
+					permissionChan <- permission
+				}
+			}
+			wg.Done()
+		}(role)
+
+	}
+
+	go func() {
+		wg.Wait()
+		close(permissionChan)
+	}()
+
+	// 所有有权限的Path
+	APIPermission := make([]string, 0)
+
+	// 查询当前登陆用户是否有权调用对应Path资源的权限
+	for permission := range permissionChan {
+		APIPermission = append(APIPermission, permission.Path)
+	}
+	for _, b := range APIPermission {
+		if b == api {
+			return true, nil
+		}
+	}
+	return false, nil
 }

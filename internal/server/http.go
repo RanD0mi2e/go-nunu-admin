@@ -5,6 +5,7 @@ import (
 	"admin-webrtc-go/docs"
 	"admin-webrtc-go/internal/handler"
 	"admin-webrtc-go/internal/middleware"
+	"admin-webrtc-go/internal/service"
 	"admin-webrtc-go/pkg/jwt"
 	"admin-webrtc-go/pkg/log"
 	"admin-webrtc-go/pkg/server/http"
@@ -20,6 +21,7 @@ func NewHTTPServer(
 	conf *viper.Viper,
 	jwt *jwt.JWT,
 	userHandler *handler.UserHandler,
+	userService service.UserService,
 ) *http.Server {
 	gin.SetMode(gin.DebugMode)
 	s := http.NewServer(
@@ -59,13 +61,13 @@ func NewHTTPServer(
 			noAuthRouter.POST("/login", userHandler.Login)
 		}
 		// Non-strict permission routing group
-		noStrictAuthRouter := v1.Group("/").Use(middleware.NoStrictAuth(jwt, logger))
+		noStrictAuthRouter := v1.Group("/").Use(middleware.NoStrictAuth(jwt, logger), middleware.RBACAuth(jwt, userService, logger))
 		{
 			noStrictAuthRouter.GET("/user", userHandler.GetProfile)
 		}
 
 		// Strict permission routing group
-		strictAuthRouter := v1.Group("/").Use(middleware.StrictAuth(jwt, logger))
+		strictAuthRouter := v1.Group("/").Use(middleware.StrictAuth(jwt, logger), middleware.RBACAuth(jwt, userService, logger))
 		{
 			strictAuthRouter.PUT("/user", userHandler.UpdateProfile)
 		}

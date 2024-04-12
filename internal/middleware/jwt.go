@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
 	"admin-webrtc-go/api/v1"
 	"admin-webrtc-go/pkg/jwt"
 	"admin-webrtc-go/pkg/log"
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
 )
