@@ -7,7 +7,7 @@ import (
 
 type Permission struct {
 	gorm.Model
-	Id             string `gorm:"primarykey"`
+	Id             string `gorm:"primarykey;autoIncrement:true"`
 	PermissionName string
 	PermissionType string       // 权限类型
 	ParentId       string       // 父节点id

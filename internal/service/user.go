@@ -55,6 +55,14 @@ func (s *userService) Register(ctx context.Context, req *v1.RegisterRequest) err
 		Email:    req.Email,
 		Password: string(hashedPassword),
 	}
+
+	err = s.tm.Transaction(ctx, func(ctx context.Context) error {
+		if err := s.userRepo.GetUserDefaultSeed(ctx, user); err != nil {
+			return err
+		}
+		return nil
+	})
+
 	// Transaction demo
 	err = s.tm.Transaction(ctx, func(ctx context.Context) error {
 		// Create a user

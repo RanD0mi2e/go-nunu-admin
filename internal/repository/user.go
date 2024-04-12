@@ -5,6 +5,8 @@ import (
 	"admin-webrtc-go/internal/model"
 	"context"
 	"errors"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -14,6 +16,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
 	GetUserWithRolesAndPermission(ctx context.Context, userId string) (*model.User, error)
+	GetUserDefaultSeed(ctx context.Context, user *model.User) error
 }
 
 func NewUserRepository(r *Repository) UserRepository {
@@ -60,6 +63,44 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*model.U
 		return nil, err
 	}
 	return &user, nil
+}
+
+// 初始化数据库
+func (r *userRepository) GetUserDefaultSeed(ctx context.Context, user *model.User) error {
+	// 初始化permission
+	permission := model.Permission{
+		Id:             uuid.NewString(),
+		PermissionName: "默认权限",
+		PermissionType: "API",
+		Path:           "auth_0",
+		Method:         "all",
+	}
+	if err := r.DB(ctx).FirstOrCreate(&permission, model.Permission{Id: permission.Id}).Error; err != nil {
+		r.logger.WithContext(ctx).Error("init default Permission failed!", zap.Error(err))
+		return err
+	}
+
+	// 初始化role
+	role := model.Role{
+		Id:       uuid.NewString(),
+		RoleName: "普通用户",
+		Permissions: []model.Permission{
+			permission,
+		},
+	}
+	if err := r.DB(ctx).FirstOrCreate(&role).Error; err != nil {
+		r.logger.WithContext(ctx).Error("init default Role failed!", zap.Error(err))
+		return err
+	}
+
+	// 初始化User
+	user.Roles = append(user.Roles, role)
+	if err := r.DB(ctx).FirstOrCreate(&user).Error; err != nil {
+		r.logger.WithContext(ctx).Error("init default User failed!", zap.Error(err))
+		return err
+	}
+
+	return nil
 }
 
 func (r *userRepository) GetUserWithRolesAndPermission(ctx context.Context, userId string) (*model.User, error) {
