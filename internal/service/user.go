@@ -64,14 +64,14 @@ func (s *userService) Register(ctx context.Context, req *v1.RegisterRequest) err
 	})
 
 	// Transaction demo
-	err = s.tm.Transaction(ctx, func(ctx context.Context) error {
-		// Create a user
-		if err = s.userRepo.Create(ctx, user); err != nil {
-			return err
-		}
-		// TODO: other repo
-		return nil
-	})
+	//err = s.tm.Transaction(ctx, func(ctx context.Context) error {
+	//	// Create a user
+	//	if err = s.userRepo.Create(ctx, user); err != nil {
+	//		return err
+	//	}
+	//	// TODO: other repo
+	//	return nil
+	//})
 	return err
 }
 
