@@ -136,7 +136,7 @@ func (s *userService) CheckAPIAuthPermission(ctx context.Context, userId string,
 		go func(role model.Role) {
 			for _, permission := range role.Permissions {
 				// api权限控制
-				if permission.PermissionType == "API" {
+				if permission.PermissionType == "api" {
 					permissionChan <- permission
 				}
 			}

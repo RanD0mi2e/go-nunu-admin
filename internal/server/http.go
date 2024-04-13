@@ -61,15 +61,28 @@ func NewHTTPServer(
 			noAuthRouter.POST("/login", userHandler.Login)
 		}
 		// Non-strict permission routing group
-		noStrictAuthRouter := v1.Group("/").Use(middleware.NoStrictAuth(jwt, logger), middleware.RBACAuth(jwt, userService, logger))
+		noStrictAuthRouter := v1.Group("/").Use(middleware.NoStrictAuth(jwt, logger))
 		{
 			noStrictAuthRouter.GET("/user", userHandler.GetProfile)
 		}
-
+		// 需要非严格校验Api权限的分组
+		noStrictApiAuthRouter := v1.Group("/:api").Use(middleware.NoStrictAuth(jwt, logger), middleware.RBACAuth(jwt, userService, logger))
+		{
+			noStrictApiAuthRouter.GET("/apiAuthTest", func(c *gin.Context) {
+				c.JSON(200, gin.H{
+					"message": "apiAuthTest Success!",
+				})
+			})
+		}
 		// Strict permission routing group
-		strictAuthRouter := v1.Group("/").Use(middleware.StrictAuth(jwt, logger), middleware.RBACAuth(jwt, userService, logger))
+		strictAuthRouter := v1.Group("/").Use(middleware.StrictAuth(jwt, logger))
 		{
 			strictAuthRouter.PUT("/user", userHandler.UpdateProfile)
+		}
+		// 需要严格校验Api权限的分组
+		strictApiAuthRouter := v1.Group("/:api").Use(middleware.StrictAuth(jwt, logger), middleware.RBACAuth(jwt, userService, logger))
+		{
+			strictApiAuthRouter.GET("apiStrictAuthTest")
 		}
 	}
 

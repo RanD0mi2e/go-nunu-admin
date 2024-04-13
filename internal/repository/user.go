@@ -69,7 +69,7 @@ func (r *userRepository) GetUserDefaultSeed(ctx context.Context, user *model.Use
 	// 初始化permission
 	permission := model.Permission{
 		PermissionName: "默认权限",
-		PermissionType: "API",
+		PermissionType: "api",
 		Path:           "auth_0",
 		Method:         "all",
 	}
