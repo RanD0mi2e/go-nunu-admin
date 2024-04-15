@@ -6,7 +6,6 @@ import (
 )
 
 type Role struct {
-	gorm.Model
 	Id          uint   `gorm:"primarykey;auto_increment"`
 	RoleLabel   string `gorm:"unique"`
 	RoleName    string

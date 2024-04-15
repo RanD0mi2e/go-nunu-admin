@@ -2,11 +2,9 @@ package model
 
 import (
 	"gorm.io/gorm"
-	"time"
 )
 
 type Permission struct {
-	gorm.Model
 	Id             uint `gorm:"primarykey;auto_increment"`
 	PermissionName string
 	PermissionType string        // 权限类型
@@ -18,8 +16,8 @@ type Permission struct {
 	Path           string        // 有权访问的路径
 	Method         string        // 有权访问的方法
 	Children       []*Permission `gorm:"foreignKey:ParentId;references:ParentId"`
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	CreatedAt      string
+	UpdatedAt      string
 	DeletedAt      gorm.DeletedAt `gorm:"index"`
 }
 

@@ -195,6 +195,8 @@ func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) 
 					Level:          permission.Level,
 					PermissionName: permission.PermissionName,
 					PermissionType: permission.PermissionType,
+					CreatedAt:      permission.CreatedAt,
+					UpdatedAt:      permission.UpdatedAt,
 					Children:       []*model.Permission{},
 				}
 				// Add this node to its parent's children list
