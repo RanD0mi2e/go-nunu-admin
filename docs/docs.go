@@ -24,6 +24,33 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/getMenuTree": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户模块"
+                ],
+                "summary": "基于用户权限获取后台菜单",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.GetMenuTreeResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "consumes": [
@@ -43,7 +70,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.LoginRequest"
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.LoginRequest"
                         }
                     }
                 ],
@@ -51,7 +78,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponse"
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.LoginResponse"
                         }
                     }
                 }
@@ -77,7 +104,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.RegisterRequest"
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.RegisterRequest"
                         }
                     }
                 ],
@@ -85,7 +112,45 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.Response"
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/updateProfile": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户模块"
+                ],
+                "summary": "更新用户信息",
+                "parameters": [
+                    {
+                        "description": "params",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.UpdateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.Response"
                         }
                     }
                 }
@@ -112,7 +177,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponse"
+                            "$ref": "#/definitions/admin-webrtc-go_api_v1.GetProfileResponse"
                         }
                     }
                 }
@@ -120,21 +185,71 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponse": {
+        "admin-webrtc-go_api_v1.GetMenuTreeResponse": {
+            "type": "object",
+            "properties": {
+                "children": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/admin-webrtc-go_api_v1.GetMenuTreeResponse"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "parentId": {
+                    "type": "integer"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "permissionName": {
+                    "type": "string"
+                },
+                "permissionType": {
+                    "type": "string"
+                },
+                "route": {
+                    "type": "string"
+                },
+                "routeFile": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "admin-webrtc-go_api_v1.GetProfileResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponseData"
+                    "$ref": "#/definitions/admin-webrtc-go_api_v1.GetProfileResponseData"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponseData": {
+        "admin-webrtc-go_api_v1.GetProfileResponseData": {
             "type": "object",
             "properties": {
                 "nickname": {
@@ -146,7 +261,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_go-nunu_nunu-layout-advanced_api_v1.LoginRequest": {
+        "admin-webrtc-go_api_v1.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -163,21 +278,21 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponse": {
+        "admin-webrtc-go_api_v1.LoginResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "integer"
                 },
                 "data": {
-                    "$ref": "#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponseData"
+                    "$ref": "#/definitions/admin-webrtc-go_api_v1.LoginResponseData"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponseData": {
+        "admin-webrtc-go_api_v1.LoginResponseData": {
             "type": "object",
             "properties": {
                 "accessToken": {
@@ -185,7 +300,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_go-nunu_nunu-layout-advanced_api_v1.RegisterRequest": {
+        "admin-webrtc-go_api_v1.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -202,7 +317,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_go-nunu_nunu-layout-advanced_api_v1.Response": {
+        "admin-webrtc-go_api_v1.Response": {
             "type": "object",
             "properties": {
                 "code": {
@@ -211,6 +326,22 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "admin-webrtc-go_api_v1.UpdateProfileRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "1234@gmail.com"
+                },
+                "nickname": {
+                    "type": "string",
+                    "example": "alan"
                 }
             }
         }

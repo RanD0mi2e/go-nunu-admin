@@ -99,6 +99,17 @@ func (h *UserHandler) GetProfile(ctx *gin.Context) {
 	v1.HandleSuccess(ctx, user)
 }
 
+// UpdateProfile godoc
+// @Summary 更新用户信息
+// @Schemes
+// @Description
+// @Tags 用户模块
+// @Accept  json
+// @Produce  json
+// @Security Bearer
+// @Param request body v1.UpdateProfileRequest true "params"
+// @Success 200 {object} v1.Response
+// @Router /updateProfile [post]
 func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	userId := GetUserIdFromCtx(ctx)
 
@@ -114,4 +125,31 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 	}
 
 	v1.HandleSuccess(ctx, nil)
+}
+
+// GetMenuTree godoc
+// @Summary 基于用户权限获取后台菜单
+// @Schemes
+// @Description
+// @Tags 用户模块
+// @Accept  json
+// @Produce  json
+// @Security Bearer
+// @Success 200 {object} v1.GetMenuTreeResponse
+// @Router /getMenuTree [get]
+func (h *UserHandler) GetMenuTree(ctx *gin.Context) {
+	userId := GetUserIdFromCtx(ctx)
+	if userId == "" {
+		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
+		return
+	}
+
+	tree, err := h.userService.GetMenuTreeByUserAuth(ctx, userId)
+
+	if err != nil {
+		v1.HandleError(ctx, http.StatusInternalServerError, v1.ErrInternalServerError, nil)
+		return
+	}
+
+	v1.HandleSuccess(ctx, tree)
 }

@@ -17,6 +17,7 @@ type UserService interface {
 	GetProfile(ctx context.Context, userId string) (*v1.GetProfileResponseData, error)
 	UpdateProfile(ctx context.Context, userId string, req *v1.UpdateProfileRequest) error
 	CheckAPIAuthPermission(ctx context.Context, userId string, api string) (bool, error)
+	GetMenuTreeByUserAuth(ctx context.Context, userId string) (*model.Permission, error)
 }
 
 func NewUserService(service *Service, userRepo repository.UserRepository) UserService {
@@ -163,4 +164,46 @@ func (s *userService) CheckAPIAuthPermission(ctx context.Context, userId string,
 		}
 	}
 	return false, nil
+}
+
+func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) (*model.Permission, error) {
+	user, err := s.userRepo.GetUserWithRolesAndPermission(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize root of the tree
+	root := &model.Permission{
+		PermissionName: "菜单根节点",
+		PermissionType: "menu",
+		Level:          0,
+		Children:       []*model.Permission{},
+	}
+
+	// Map to store pointers to node in the tree
+	nodes := map[uint]*model.Permission{
+		0: root,
+	}
+
+	for _, role := range user.Roles {
+		for _, permission := range role.Permissions {
+			if permission.PermissionType == "menu" {
+				// Create new node
+				newNode := &model.Permission{
+					Id:             permission.Id,
+					ParentId:       permission.ParentId,
+					Level:          permission.Level,
+					PermissionName: permission.PermissionName,
+					PermissionType: permission.PermissionType,
+					Children:       []*model.Permission{},
+				}
+				// Add this node to its parent's children list
+				nodes[permission.ParentId].Children = append(nodes[permission.ParentId].Children, newNode)
+				// Add this node to the nodes map
+				nodes[permission.Id] = newNode
+			}
+		}
+	}
+
+	return root, nil
 }

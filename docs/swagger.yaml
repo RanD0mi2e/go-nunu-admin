@@ -1,14 +1,47 @@
 definitions:
-  github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponse:
+  admin-webrtc-go_api_v1.GetMenuTreeResponse:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/admin-webrtc-go_api_v1.GetMenuTreeResponse'
+        type: array
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      icon:
+        type: string
+      id:
+        type: integer
+      level:
+        type: integer
+      method:
+        type: string
+      parentId:
+        type: integer
+      path:
+        type: string
+      permissionName:
+        type: string
+      permissionType:
+        type: string
+      route:
+        type: string
+      routeFile:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  admin-webrtc-go_api_v1.GetProfileResponse:
     properties:
       code:
         type: integer
       data:
-        $ref: '#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponseData'
+        $ref: '#/definitions/admin-webrtc-go_api_v1.GetProfileResponseData'
       message:
         type: string
     type: object
-  github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponseData:
+  admin-webrtc-go_api_v1.GetProfileResponseData:
     properties:
       nickname:
         example: alan
@@ -16,7 +49,7 @@ definitions:
       userId:
         type: string
     type: object
-  github_com_go-nunu_nunu-layout-advanced_api_v1.LoginRequest:
+  admin-webrtc-go_api_v1.LoginRequest:
     properties:
       email:
         example: 1234@gmail.com
@@ -28,21 +61,21 @@ definitions:
     - email
     - password
     type: object
-  github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponse:
+  admin-webrtc-go_api_v1.LoginResponse:
     properties:
       code:
         type: integer
       data:
-        $ref: '#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponseData'
+        $ref: '#/definitions/admin-webrtc-go_api_v1.LoginResponseData'
       message:
         type: string
     type: object
-  github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponseData:
+  admin-webrtc-go_api_v1.LoginResponseData:
     properties:
       accessToken:
         type: string
     type: object
-  github_com_go-nunu_nunu-layout-advanced_api_v1.RegisterRequest:
+  admin-webrtc-go_api_v1.RegisterRequest:
     properties:
       email:
         example: 1234@gmail.com
@@ -54,13 +87,24 @@ definitions:
     - email
     - password
     type: object
-  github_com_go-nunu_nunu-layout-advanced_api_v1.Response:
+  admin-webrtc-go_api_v1.Response:
     properties:
       code:
         type: integer
       data: {}
       message:
         type: string
+    type: object
+  admin-webrtc-go_api_v1.UpdateProfileRequest:
+    properties:
+      email:
+        example: 1234@gmail.com
+        type: string
+      nickname:
+        example: alan
+        type: string
+    required:
+    - email
     type: object
 host: localhost:8000
 info:
@@ -76,6 +120,22 @@ info:
   title: Nunu Example API
   version: 1.0.0
 paths:
+  /getMenuTree:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin-webrtc-go_api_v1.GetMenuTreeResponse'
+      security:
+      - Bearer: []
+      summary: 基于用户权限获取后台菜单
+      tags:
+      - 用户模块
   /login:
     post:
       consumes:
@@ -86,14 +146,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.LoginRequest'
+          $ref: '#/definitions/admin-webrtc-go_api_v1.LoginRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.LoginResponse'
+            $ref: '#/definitions/admin-webrtc-go_api_v1.LoginResponse'
       summary: 账号登录
       tags:
       - 用户模块
@@ -108,15 +168,38 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.RegisterRequest'
+          $ref: '#/definitions/admin-webrtc-go_api_v1.RegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.Response'
+            $ref: '#/definitions/admin-webrtc-go_api_v1.Response'
       summary: 用户注册
+      tags:
+      - 用户模块
+  /updateProfile:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: params
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/admin-webrtc-go_api_v1.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/admin-webrtc-go_api_v1.Response'
+      security:
+      - Bearer: []
+      summary: 更新用户信息
       tags:
       - 用户模块
   /user:
@@ -129,7 +212,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_go-nunu_nunu-layout-advanced_api_v1.GetProfileResponse'
+            $ref: '#/definitions/admin-webrtc-go_api_v1.GetProfileResponse'
       security:
       - Bearer: []
       summary: 获取用户信息

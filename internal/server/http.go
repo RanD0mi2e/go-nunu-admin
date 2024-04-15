@@ -64,6 +64,7 @@ func NewHTTPServer(
 		noStrictAuthRouter := v1.Group("/").Use(middleware.NoStrictAuth(jwt, logger))
 		{
 			noStrictAuthRouter.GET("/user", userHandler.GetProfile)
+			noStrictAuthRouter.GET("/getUserMenu", userHandler.GetMenuTree)
 		}
 		// 需要非严格校验Api权限的分组
 		noStrictApiAuthRouter := v1.Group("/:api").Use(middleware.NoStrictAuth(jwt, logger), middleware.RBACAuth(jwt, userService, logger))
