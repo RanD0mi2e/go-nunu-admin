@@ -17,7 +17,7 @@ type UserService interface {
 	GetProfile(ctx context.Context, userId string) (*v1.GetProfileResponseData, error)
 	UpdateProfile(ctx context.Context, userId string, req *v1.UpdateProfileRequest) error
 	CheckAPIAuthPermission(ctx context.Context, userId string, api string) (bool, error)
-	GetMenuTreeByUserAuth(ctx context.Context, userId string) (*model.Permission, error)
+	GetMenuTreeByUserAuth(ctx context.Context, userId string) (*v1.GetMenuTreeResponseData, error)
 }
 
 func NewUserService(service *Service, userRepo repository.UserRepository) UserService {
@@ -166,22 +166,22 @@ func (s *userService) CheckAPIAuthPermission(ctx context.Context, userId string,
 	return false, nil
 }
 
-func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) (*model.Permission, error) {
+func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) (*v1.GetMenuTreeResponseData, error) {
 	user, err := s.userRepo.GetUserWithRolesAndPermission(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
 
 	// Initialize root of the tree
-	root := &model.Permission{
+	root := &v1.GetMenuTreeResponseData{
 		PermissionName: "菜单根节点",
 		PermissionType: "menu",
 		Level:          0,
-		Children:       []*model.Permission{},
+		Children:       []*v1.GetMenuTreeResponseData{},
 	}
 
 	// Map to store pointers to node in the tree
-	nodes := map[uint]*model.Permission{
+	nodes := map[uint]*v1.GetMenuTreeResponseData{
 		0: root,
 	}
 
@@ -189,15 +189,18 @@ func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) 
 		for _, permission := range role.Permissions {
 			if permission.PermissionType == "menu" {
 				// Create new node
-				newNode := &model.Permission{
-					Id:             permission.Id,
+				newNode := &v1.GetMenuTreeResponseData{
+					ID:             permission.Id,
 					ParentId:       permission.ParentId,
 					Level:          permission.Level,
 					PermissionName: permission.PermissionName,
 					PermissionType: permission.PermissionType,
+					Route:          permission.Route,
+					RouteFile:      permission.RouteFile,
 					CreatedAt:      permission.CreatedAt,
 					UpdatedAt:      permission.UpdatedAt,
-					Children:       []*model.Permission{},
+					DeletedAt:      permission.DeletedAt,
+					Children:       []*v1.GetMenuTreeResponseData{},
 				}
 				// Add this node to its parent's children list
 				nodes[permission.ParentId].Children = append(nodes[permission.ParentId].Children, newNode)
