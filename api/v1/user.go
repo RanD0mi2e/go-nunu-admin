@@ -32,20 +32,20 @@ type GetProfileResponse struct {
 	Data GetProfileResponseData
 }
 type GetMenuTreeResponseData struct {
-	ID             uint                       `json:"id"`
-	PermissionName string                     `json:"permissionName"`
-	PermissionType string                     `json:"permissionType"`
-	ParentId       uint                       `json:"parentId"`
+	Key            string                     `json:"key"`
+	Label          string                     `json:"label"`
+	PermissionType string                     `json:"permission_type"`
+	ParentId       uint                       `json:"parent_id"`
 	Level          int                        `json:"level"`
 	Icon           string                     `json:"icon"`
 	Route          string                     `json:"route"`
-	RouteFile      string                     `json:"routeFile"`
+	RouteFile      string                     `json:"route_file"`
 	Path           string                     `json:"path"`
 	Method         string                     `json:"method"`
-	Children       []*GetMenuTreeResponseData `json:"children"`
-	CreatedAt      string                     `json:"createdAt"`
-	UpdatedAt      string                     `json:"updatedAt"`
-	DeletedAt      gorm.DeletedAt             `json:"deletedAt"`
+	Children       []*GetMenuTreeResponseData `json:"children,omitempty"`
+	CreatedAt      string                     `json:"created_at"`
+	UpdatedAt      string                     `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt             `json:"deleted_at"`
 }
 
 type GetMenuTreeResponse struct {

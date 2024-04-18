@@ -5,8 +5,8 @@ import (
 )
 
 type Permission struct {
-	Id             uint `gorm:"primarykey;auto_increment"`
-	PermissionName string
+	Id             uint          `gorm:"primarykey;auto_increment"`
+	PermissionName string        // 权限名称
 	PermissionType string        // 权限类型
 	ParentId       uint          // 父节点id
 	Level          int           // 层级

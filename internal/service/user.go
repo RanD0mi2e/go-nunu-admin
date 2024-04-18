@@ -5,6 +5,7 @@ import (
 	"admin-webrtc-go/internal/model"
 	"admin-webrtc-go/internal/repository"
 	"context"
+	"strconv"
 	"sync"
 	"time"
 
@@ -38,7 +39,7 @@ func (s *userService) Register(ctx context.Context, req *v1.RegisterRequest) err
 	if err != nil {
 		return v1.ErrInternalServerError
 	}
-	if err == nil && user != nil {
+	if user != nil {
 		return v1.ErrEmailAlreadyUse
 	}
 
@@ -174,7 +175,7 @@ func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) 
 
 	// Initialize root of the tree
 	root := &v1.GetMenuTreeResponseData{
-		PermissionName: "菜单根节点",
+		Label:          "菜单根节点",
 		PermissionType: "menu",
 		Level:          0,
 		Children:       []*v1.GetMenuTreeResponseData{},
@@ -190,10 +191,10 @@ func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) 
 			if permission.PermissionType == "menu" {
 				// Create new node
 				newNode := &v1.GetMenuTreeResponseData{
-					ID:             permission.Id,
+					Key:            strconv.FormatUint(uint64(permission.Id), 10),
 					ParentId:       permission.ParentId,
 					Level:          permission.Level,
-					PermissionName: permission.PermissionName,
+					Label:          permission.PermissionName,
 					PermissionType: permission.PermissionType,
 					Route:          permission.Route,
 					RouteFile:      permission.RouteFile,
