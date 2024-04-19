@@ -13,4 +13,5 @@ var (
 
 	// more biz errors
 	ErrEmailAlreadyUse = newError(1001, "The email is already in use.")
+	ErrSortParams      = newError(1002, "The sort parameter is invalid.")
 )

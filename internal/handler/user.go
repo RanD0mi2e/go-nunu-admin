@@ -139,12 +139,14 @@ func (h *UserHandler) UpdateProfile(ctx *gin.Context) {
 // @Router /getMenuTree [get]
 func (h *UserHandler) GetMenuTree(ctx *gin.Context) {
 	userId := GetUserIdFromCtx(ctx)
+	// 取出query的sort参数，默认升序
+	sort := ctx.DefaultQuery("sort", "asc")
 	if userId == "" {
 		v1.HandleError(ctx, http.StatusUnauthorized, v1.ErrUnauthorized, nil)
 		return
 	}
 
-	tree, err := h.userService.GetMenuTreeByUserAuth(ctx, userId)
+	tree, err := h.userService.GetMenuTreeByUserAuth(ctx, userId, sort)
 
 	if err != nil {
 		v1.HandleError(ctx, http.StatusInternalServerError, v1.ErrInternalServerError, nil)

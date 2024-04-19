@@ -34,8 +34,9 @@ type GetProfileResponse struct {
 type GetMenuTreeResponseData struct {
 	Key            string                     `json:"key"`
 	Label          string                     `json:"label"`
+	Sort           string                     `json:"sort"`
 	PermissionType string                     `json:"permission_type"`
-	ParentId       uint                       `json:"parent_id"`
+	ParentId       string                     `json:"parent_id"`
 	Level          int                        `json:"level"`
 	Icon           string                     `json:"icon"`
 	Route          string                     `json:"route"`

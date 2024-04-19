@@ -14,7 +14,7 @@ type UserRepository interface {
 	Update(ctx context.Context, user *model.User) error
 	GetByID(ctx context.Context, id string) (*model.User, error)
 	GetByEmail(ctx context.Context, email string) (*model.User, error)
-	GetUserWithRolesAndPermission(ctx context.Context, userId string) (*model.User, error)
+	GetUserWithRolesAndPermission(ctx context.Context, userId string, sort string) (*model.User, error)
 	GetUserDefaultSeed(ctx context.Context, user *model.User) error
 }
 
@@ -64,7 +64,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*model.U
 	return &user, nil
 }
 
-// 初始化数据库
+// GetUserDefaultSeed 初始化数据库
 func (r *userRepository) GetUserDefaultSeed(ctx context.Context, user *model.User) error {
 	// 初始化permission
 	permission := model.Permission{
@@ -101,9 +101,14 @@ func (r *userRepository) GetUserDefaultSeed(ctx context.Context, user *model.Use
 	return nil
 }
 
-func (r *userRepository) GetUserWithRolesAndPermission(ctx context.Context, userId string) (*model.User, error) {
+func (r *userRepository) GetUserWithRolesAndPermission(ctx context.Context, userId string, sort string) (*model.User, error) {
 	var user model.User
-	if err := r.DB(ctx).Preload("Roles").Preload("Roles.Permissions").Where("user_id = ?", userId).First(&user).Error; err != nil {
+	if sort != "asc" && sort != "desc" {
+		sort = "asc"
+	}
+	if err := r.DB(ctx).Preload("Roles").Preload("Roles.Permissions", func(db *gorm.DB) *gorm.DB {
+		return db.Order("sort " + sort)
+	}).Where("user_id = ?", userId).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, v1.ErrEmptyRecord
 		}

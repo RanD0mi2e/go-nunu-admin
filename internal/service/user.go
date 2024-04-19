@@ -5,11 +5,11 @@ import (
 	"admin-webrtc-go/internal/model"
 	"admin-webrtc-go/internal/repository"
 	"context"
+	"golang.org/x/crypto/bcrypt"
+	sortPkg "sort"
 	"strconv"
 	"sync"
 	"time"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
@@ -18,7 +18,7 @@ type UserService interface {
 	GetProfile(ctx context.Context, userId string) (*v1.GetProfileResponseData, error)
 	UpdateProfile(ctx context.Context, userId string, req *v1.UpdateProfileRequest) error
 	CheckAPIAuthPermission(ctx context.Context, userId string, api string) (bool, error)
-	GetMenuTreeByUserAuth(ctx context.Context, userId string) (*v1.GetMenuTreeResponseData, error)
+	GetMenuTreeByUserAuth(ctx context.Context, userId string, sort string) (*v1.GetMenuTreeResponseData, error)
 }
 
 func NewUserService(service *Service, userRepo repository.UserRepository) UserService {
@@ -124,7 +124,7 @@ func (s *userService) UpdateProfile(ctx context.Context, userId string, req *v1.
 }
 
 func (s *userService) CheckAPIAuthPermission(ctx context.Context, userId string, api string) (bool, error) {
-	user, err := s.userRepo.GetUserWithRolesAndPermission(ctx, userId)
+	user, err := s.userRepo.GetUserWithRolesAndPermission(ctx, userId, "")
 	// 数据库查不到用户的权限，返回false
 	if err != nil {
 		return false, err
@@ -167,8 +167,8 @@ func (s *userService) CheckAPIAuthPermission(ctx context.Context, userId string,
 	return false, nil
 }
 
-func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) (*v1.GetMenuTreeResponseData, error) {
-	user, err := s.userRepo.GetUserWithRolesAndPermission(ctx, userId)
+func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string, sort string) (*v1.GetMenuTreeResponseData, error) {
+	user, err := s.userRepo.GetUserWithRolesAndPermission(ctx, userId, sort)
 	if err != nil {
 		return nil, err
 	}
@@ -178,21 +178,25 @@ func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) 
 		Label:          "菜单根节点",
 		PermissionType: "menu",
 		Level:          0,
+		Key:            "0",
 		Children:       []*v1.GetMenuTreeResponseData{},
 	}
 
-	// Map to store pointers to node in the tree
-	nodes := map[uint]*v1.GetMenuTreeResponseData{
-		0: root,
-	}
+	var rootNodes []*v1.GetMenuTreeResponseData
+
+	// 节点暂存表，暂时找不到父节点的节点先放进表里
+	parentIdMap := make(map[string][]*v1.GetMenuTreeResponseData)
 
 	for _, role := range user.Roles {
 		for _, permission := range role.Permissions {
 			if permission.PermissionType == "menu" {
+				permissionIdStr := strconv.FormatUint(uint64(permission.Id), 10)
+				parentIdStr := strconv.FormatUint(uint64(permission.ParentId), 10)
 				// Create new node
 				newNode := &v1.GetMenuTreeResponseData{
-					Key:            strconv.FormatUint(uint64(permission.Id), 10),
-					ParentId:       permission.ParentId,
+					Key:            permissionIdStr,
+					ParentId:       parentIdStr,
+					Sort:           permission.Sort,
 					Level:          permission.Level,
 					Label:          permission.PermissionName,
 					PermissionType: permission.PermissionType,
@@ -203,13 +207,50 @@ func (s *userService) GetMenuTreeByUserAuth(ctx context.Context, userId string) 
 					DeletedAt:      permission.DeletedAt,
 					Children:       []*v1.GetMenuTreeResponseData{},
 				}
+				if permission.Level == 1 {
+					rootNodes = append(rootNodes, newNode)
+				} else {
+					parentIdMap[parentIdStr] = append(parentIdMap[parentIdStr], newNode)
+				}
 				// Add this node to its parent's children list
-				nodes[permission.ParentId].Children = append(nodes[permission.ParentId].Children, newNode)
+				//nodes[permission.ParentId].Children = append(nodes[permission.ParentId].Children, newNode)
 				// Add this node to the nodes map
-				nodes[permission.Id] = newNode
+				//nodes[permission.Key] = newNode
 			}
 		}
 	}
+	// 最顶层父层级排序
+	if sort == "asc" {
+		sortPkg.Slice(rootNodes, func(i, j int) bool {
+			return rootNodes[i].Level < rootNodes[j].Level
+		})
+	}
+	if sort == "desc" {
+		sortPkg.Slice(rootNodes, func(i, j int) bool {
+			return rootNodes[i].Level > rootNodes[j].Level
+		})
+	}
+	// Build the tree structure by connecting parent and child nodes
+	for _, node := range rootNodes {
+		parentId := node.Key
+		if children, ok := parentIdMap[parentId]; ok {
+			// 子层级排序后再添加到父层级中
+			if sort == "asc" {
+				sortPkg.Slice(children, func(i, j int) bool {
+					return children[i].Level < children[j].Level
+				})
+			}
+			if sort == "desc" {
+				sortPkg.Slice(children, func(i, j int) bool {
+					return children[i].Level > children[j].Level
+				})
+			}
+			node.Children = children
+		}
+	}
 
+	root.Children = rootNodes
+
+	// Return the root node of the tree
 	return root, nil
 }

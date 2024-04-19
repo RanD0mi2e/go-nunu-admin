@@ -15,6 +15,7 @@ type Permission struct {
 	RouteFile      string        // 路由地址对应前端文件
 	Path           string        // 有权访问的路径
 	Method         string        // 有权访问的方法
+	Sort           string        `gorm:"index"` // 菜单排序
 	Children       []*Permission `gorm:"foreignKey:ParentId;references:ParentId"`
 	CreatedAt      string
 	UpdatedAt      string
