@@ -37,7 +37,7 @@ type GetMenuTreeResponseData struct {
 	Sort           string                     `json:"sort"`
 	PermissionType string                     `json:"permission_type"`
 	ParentId       string                     `json:"parent_id"`
-	Level          int                        `json:"level"`
+	Level          uint                       `json:"level"`
 	Icon           string                     `json:"icon"`
 	Route          string                     `json:"route"`
 	RouteFile      string                     `json:"route_file"`

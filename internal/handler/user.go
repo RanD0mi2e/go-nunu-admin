@@ -149,7 +149,7 @@ func (h *UserHandler) GetMenuTree(ctx *gin.Context) {
 	tree, err := h.userService.GetMenuTreeByUserAuth(ctx, userId, sort)
 
 	if err != nil {
-		v1.HandleError(ctx, http.StatusInternalServerError, v1.ErrInternalServerError, nil)
+		v1.HandleError(ctx, http.StatusInternalServerError, v1.ErrInternalServerError, err.Error())
 		return
 	}
 
